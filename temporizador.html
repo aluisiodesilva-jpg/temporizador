@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contagem Regressiva</title>
+
+<style>
+    body{
+        margin:0;
+        height:100vh;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        flex-direction:column;
+        font-family:Arial, Helvetica, sans-serif;
+        background:#f5f5f5;
+    }
+
+    #timer{
+        font-size:5rem;
+        font-weight:bold;
+        color:#222;
+        letter-spacing:2px;
+    }
+
+    #alerta{
+        display:none;
+        margin-top:25px;
+        padding:15px 40px;
+        background:linear-gradient(90deg,#d4af37,#f5d76e,#d4af37);
+        color:#000;
+        font-size:1.8rem;
+        font-weight:bold;
+        border-radius:10px;
+        box-shadow:0 4px 12px rgba(0,0,0,.25);
+        animation:piscar 1s infinite;
+    }
+
+    @keyframes piscar{
+        50%{opacity:.7;}
+    }
+</style>
+</head>
+<body>
+
+<div id="timer">15:00</div>
+
+<div id="alerta">
+    Tempo esgotado!
+</div>
+
+<script>
+let tempo = 15 * 60; // 15 minutos em segundos
+
+const timer = document.getElementById("timer");
+const alerta = document.getElementById("alerta");
+
+function formatar(segundos){
+    const mm = Math.floor(segundos / 60)
+        .toString()
+        .padStart(2,"0");
+
+    const ss = (segundos % 60)
+        .toString()
+        .padStart(2,"0");
+
+    return `${mm}:${ss}`;
+}
+
+function beep(freq, duracao, atraso){
+    setTimeout(() => {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.type = "sine";
+        osc.frequency.value = freq;
+
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+
+        osc.start();
+        osc.stop(ctx.currentTime + duracao);
+
+        osc.onended = () => ctx.close();
+    }, atraso);
+}
+
+const intervalo = setInterval(() => {
+
+    tempo--;
+
+    timer.textContent = formatar(tempo);
+
+    if(tempo <= 0){
+        clearInterval(intervalo);
+
+        timer.textContent = "00:00";
+
+        alerta.innerHTML =
+            '<strong>"Tempo esgotado!"</strong>';
+
+        alerta.style.display = "block";
+
+        // Bipe triplo
+        beep(800, 0.20, 0);
+        beep(800, 0.20, 300);
+        beep(800, 0.20, 600);
+    }
+
+}, 1000);
+</script>
+
+</body>
+</html>
